@@ -1,0 +1,54 @@
+%! Author = valaevali
+%! Date = 26.01.2024
+
+% Preamble
+\documentclass[10pt]{article}
+
+% Packages
+\usepackage{lebenslauf/cvstyle}
+\usepackage{lipsum}
+
+% Document
+\begin{document}
+%    \languageGerman
+    \name{Valaevali}{01.01.1990}{Latex editor}
+    
+    \profilepicture{"dummy-profile.png"}
+
+    \profileinfo{\lipsum[1][1-6]}
+
+    \personalinfo{Testweg 2, Switzerland}{+4100 000 00 00\linebreak[4]\null}{valaevali@email.ch}{linkedin.com/in}{}
+
+    \theqrcode{"qr-code_grey.png"}
+
+    \interest{coding}{\faCode}
+    \interest{latex}{\faChevronCircleRight}
+
+    \skill{Skill 1}
+    \skill{Skill 2}
+    \skill{Skill 3}
+    \skill{Skill 4}
+    \skill{Skill 5}
+    \skill{Skill 6}
+    \skill{Skill 7}
+    \skill{Skill 8}
+
+    \berufserfahrungDetail{Nov 2023}{Dez 2023}{Some Job}{\languageIf{Somewhere}{Irgendwo}}{\languageIf{$\bullet$ Here you can
+    put some details about the job!}{$\bullet$ Hier kannst du weitere Details zum Job schreiben!}}
+    \berufserfahrungLong{Sep 2023}{Oct 2023}{Another Job}{\languageIf{Somewhere different}{Irgendwo sonst}}{}{
+        Another job at the same place}{Jul 2023}{Aug 2023}
+    \berufserfahrung{May 2023}{Jun 2023}{\languageIf{Jet another one}{Wieder einen anderen Job}}{Somewhere over the
+    rainbow}
+
+    \ausbildung{Jun 2023}{Aug 2023}{Master}{\languageIf{Somewhere}{Irgendwo}}
+    \ausbildungDetails{Mar 2023}{Apr 2023}{Master}{\languageIf{Somewhere}{Irgendwo}}{Some minor details to this
+    eduction!}
+    \ausbildungLong{Jan 2023}{Feb 2023}{Bachelor}{\languageIf{Somewhere}{Irgendwo}}{}{Minor: Something else}
+
+    \zertifikat{Jan 2023}{Zertificate for some stuff}{Some organisation}{}
+
+    \languageLvl{\languageIf{Latin}{Latein}}{Native langauge}
+
+    \printcv
+
+\end{document}

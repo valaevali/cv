@@ -1,0 +1,546 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{lebenslauf/cvstyle}[2023/05/11 My CV Style]
+
+\RequirePackage{fontspec}
+\RequirePackage{graphicx}
+\RequirePackage{xcolor}
+\RequirePackage{fontawesome5}
+\RequirePackage{tabularx}
+\RequirePackage{calc}
+\RequirePackage{tikz}
+\RequirePackage{tikzpagenodes}
+\RequirePackage{enumerate}
+\usetikzlibrary{shapes.misc, positioning, fit}
+\RequirePackage{empheq}
+\RequirePackage{caption}
+\RequirePackage{color}
+\RequirePackage{colonequals}
+\RequirePackage{hyperref}
+\RequirePackage{longtable}
+\RequirePackage{booktabs}
+\RequirePackage{amsfonts}
+\RequirePackage{natbib}
+\RequirePackage{afterpage}
+
+% Define the page layout
+\RequirePackage[a4paper,left=0cm,right=0cm,top=0cm,bottom=0cm,nohead,nofoot]{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{listofitems}
+\RequirePackage{etoolbox}
+
+% Define the default colors
+\RequirePackage{xcolor}
+\definecolor{highlightcolor}{RGB}{125,0,0}
+\definecolor{leftpanelcolor}{RGB}{75,79,79}
+\definecolor{leftpaneltextcolor}{RGB}{0,0,0}
+\definecolor{rightpanelcolor}{RGB}{192,192,192}
+\definecolor{maintextcolor}{RGB}{0,0,0}
+
+% Define the fonts
+\setmainfont{Calibri Light}
+\setsepchar{,||-}
+\setlength{\parindent}{0pt}
+\color{maintextcolor}
+
+% Help functions
+\newcommand{\myifempty}[3]{
+    \ifx#1
+    #2
+    \else
+    #3
+    \fi
+}
+
+% Define language
+\newcommand{\english}{EN}
+\newcommand{\languageCV}{EN}
+\newcommand{\languageGerman}{
+    \renewcommand{\languageCV}{DE}
+}
+\newcommand{\languageEnglish}{
+    \renewcommand{\languageCV}{EN}
+}
+\newcommand{\languageIf}[2]{\ifx\languageCV\english{#1}\else{#2}\fi}
+\newcommand{\addwhitespace}[1]{#1\smallskip}
+
+% Other helpful macros
+\newcommand{\cvparagraph}[1]{\paragraph{#1}\mbox{}\\}
+
+%% Define name title
+\newcommand{\namepara}{Default NAME}
+\newcommand{\birthdate}{01.01.1990}
+\newcommand{\titlepara}{Default TITLE}
+\newcommand{\name}[3]{
+    \renewcommand{\namepara}{\uppercase{#1}}
+    \renewcommand{\birthdate}{#2}
+    \renewcommand{\titlepara}{#3}
+}
+\newcommand{\printname}{\namepara}
+\newcommand{\printbirthdate}{\birthdate}
+\newcommand{\printtitle}{\titlepara}
+
+%%%%%% Define the left panel
+% Define the circle image command
+\newcommand{\picturepara}{}
+\newcommand{\profilepicture}[1]{\renewcommand{\picturepara}{#1}}
+\newcommand{\printpicture}{%
+    \begin{tikzpicture}[baseline=(image.center)]
+        \clip (0,0) circle (2.2cm);
+        \node (image) at (0,0) {\includegraphics[width=4.4cm]{\picturepara}};
+    \end{tikzpicture}
+}
+
+% Define profil infos
+\newcommand{\profileinfopara}{}
+\newcommand{\profileinfo}[1]{\renewcommand{\profileinfopara}{#1}}
+\newcommand{\printprofileinfo}{\profileinfopara}
+
+% Define personalinfo
+\newcommand{\addresspara}{}
+\newcommand{\addressCitypara}{}
+\newcommand{\phonepara}{}
+\newcommand{\emailpara}{}
+\newcommand{\personalinfo}[5]{
+    \readlist*\AD{#1}
+    \renewcommand{\addresspara}{\AD[1],}
+    \renewcommand{\addressCitypara}{\AD[2]}
+    \renewcommand{\phonepara}{#2}
+    \renewcommand{\emailpara}{#3}
+    \if#4\empty
+    \else
+    \expandafter\edef\csname linkedinpara\endcsname{#4}
+    \fi
+    \if#5\empty
+    \else
+    \expandafter\edef\csname githubpagepara\endcsname{#5}
+    \fi
+}
+\newcommand{\printaddress}{\addresspara}
+\newcommand{\printaddresscity}{\addressCitypara}
+\newcommand{\printphone}{\phonepara}
+\newcommand{\printemail}{\emailpara}
+\newcommand{\printlinkedin}{\linkedinpara}
+\newcommand{\printgithub}{\githubpagepara}
+
+% add QR - code
+\newcommand{\theqrcode}[1]{
+    \if#1\empty
+    \else
+    \expandafter\edef\csname qrcode\endcsname{#1}
+    \fi
+}
+\newcommand{\printqrcode}{%
+    \begin{tikzpicture}[baseline=(image.center)]
+        \node (c) at (0,0) {};
+        \node (image) at ([xshift=2.2cm, yshift=0.2cm] c) {\includegraphics[width=3.5cm]{\qrcode}};
+    \end{tikzpicture}
+}
+
+% Define interests
+\renewcommand{\arraystretch}{1.5}
+
+\newcommand{\interests}{}
+\newcommand{\interest}[2]{%
+    \listadd{\interests}{#1}
+    \expandafter\edef\csname #1Pic\endcsname{#2}
+}
+
+\newcommand{\printinterestsrow}[1]{%
+    \color{leftpaneltextcolor}{\csname #1Pic\endcsname} & #1 \\
+}
+
+\newcommand{\printinterests}{%
+    \begin{tabular}{rl}
+        \forlistloop{\printinterestsrow}{\interests}
+    \end{tabular}
+}
+
+% Define skills
+\newcommand{\skills}{}
+\newcommand{\skill}[1]{%
+    \listadd{\skills}{#1}
+}
+
+\newcommand{\printskilleach}[1]{%
+    \begin{tikzpicture}[remember picture]
+        \node (s) at (0,0) {#1};
+        \draw[draw=none, fill=highlightcolor, rounded corners=4pt, opacity=0.3]
+        (s.north west) -- (s.north east) -- (s.south east) -- (s.south west) -- (s.north west);
+        \node (t) at (0,0) {\color{leftpaneltextcolor}{#1}};
+    \end{tikzpicture}
+}
+
+\newcommand{\printskills}{%
+    \begin{tikzpicture}[remember picture]
+        \node[text width=5.3cm, align=center] at (0,0) {
+        \forlistloop{\printskilleach}{\skills}};
+    \end{tikzpicture}
+    \vspace{0.5cm}
+}
+
+% Define work history
+\newcommand{\berufserfahrungen}{}
+\newcommand{\berufserfahrung}[4]{%
+    \listadd{\berufserfahrungen}{#1}
+    \expandafter\edef\csname #1BEBis\endcsname{#2}
+    \expandafter\edef\csname #1BETitel\endcsname{#3}
+    \expandafter\edef\csname #1BEOrt\endcsname{#4}
+}
+\newcommand{\berufserfahrungDetail}[5]{%
+    \listadd{\berufserfahrungen}{#1}
+    \expandafter\edef\csname #1BEBis\endcsname{#2}
+    \expandafter\edef\csname #1BETitel\endcsname{#3}
+    \expandafter\edef\csname #1BEOrt\endcsname{#4}
+    \if#5\empty
+    \else
+    \expandafter\edef\csname #1BEDetails\endcsname{#5}
+    \fi
+}
+\newcommand{\berufserfahrungLong}[8]{%
+    \listadd{\berufserfahrungen}{#1}
+    \expandafter\edef\csname #1BEBis\endcsname{#2}
+    \expandafter\edef\csname #1BETitel\endcsname{#3}
+    \expandafter\edef\csname #1BEOrt\endcsname{#4}
+    \if#5\empty
+    \else
+    \expandafter\edef\csname #1BEDetails\endcsname{#5}
+    \fi
+    \if#6\empty
+    \else
+    \expandafter\edef\csname #1BESecondTitel\endcsname{#6}
+    \expandafter\edef\csname #1BESecondVon\endcsname{#7}
+    \expandafter\edef\csname #1BESecondBis\endcsname{#8}
+    \fi
+}
+
+% print work history
+\newcommand{\printtimelinerowBE}[1]{%
+    \begin{tikzpicture}[remember picture]
+        \node[anchor=west] (c) at (0,0) {};
+        \node[anchor=west, align=left] (BET) at ([yshift=0.5cm, xshift=0.5cm] c.north east) {\bfseries{{\csname
+        #1BETitel\endcsname}},\, \color{rightpanelcolor}{\color{rightpanelcolor}{#1 \,--\, {\csname #1BEBis\endcsname}}}};
+        \ifcsdef{#1BESecondTitel}{
+            \node[anchor=north west, align=left, text width=10.6cm] (BES) at
+            ([xshift=-0.125cm, yshift=0.09cm] BET.south west)
+                {\bfseries{{\csname #1BESecondTitel\endcsname}},\,
+            \color{rightpanelcolor}{\color{rightpanelcolor}{{\csname #1BESecondVon\endcsname} \,--\,
+            {\csname #1BESecondBis\endcsname}}}};
+            \node (BEX) at ([xshift=0.25cm, yshift=0.2cm] BES.south west) {};
+        }{
+            \node (BEX) at ([xshift=0.125cm, yshift=0.2cm] BET.south west) {};
+        }
+        \node[anchor=north west, align=left, text width=11cm] (BEO) at (BEX.south west)
+            {\color{maintextcolor}{\csname #1BEOrt\endcsname}};
+        \ifcsdef{#1BEDetails}{
+            \node[anchor=north west, align=left, text width=10.6cm] (BED) at ([yshift=-0.1cm, xshift=0.4cm] BEO.south
+            west)
+                {{\csname #1BEDetails\endcsname}};
+        }{}
+        \draw ([yshift=0.7cm, xshift=-0.12cm] c.north east) -- ([yshift=+0.02cm, xshift=-0.62cm] BEO.south west);
+    \end{tikzpicture}%
+    \tabularnewline
+}
+
+\newcommand{\printberufserfahrungen}{%
+    \begin{longtable*}[l]{l}
+        \forlistloop{\printtimelinerowBE}{\berufserfahrungen}
+    \end{longtable*}%
+}
+
+% define education history
+\newcommand{\ausbildungen}{}
+\newcommand{\ausbildung}[4]{%
+    \listadd{\ausbildungen}{#1}
+    \expandafter\edef\csname #1ABis\endcsname{#2}
+    \expandafter\edef\csname #1ATitel\endcsname{#3}
+    \expandafter\edef\csname #1AOrt\endcsname{#4}
+}
+\newcommand{\ausbildungDetails}[5]{%
+    \listadd{\ausbildungen}{#1}
+    \expandafter\edef\csname #1ABis\endcsname{#2}
+    \expandafter\edef\csname #1ATitel\endcsname{#3}
+    \expandafter\edef\csname #1AOrt\endcsname{#4}
+    \if#5\empty
+    \else
+    \expandafter\edef\csname #1ADetails\endcsname{#5}
+    \fi
+}
+\newcommand{\ausbildungLong}[6]{%
+    \listadd{\ausbildungen}{#1}
+    \expandafter\edef\csname #1ABis\endcsname{#2}
+    \expandafter\edef\csname #1ATitel\endcsname{#3}
+    \expandafter\edef\csname #1AOrt\endcsname{#4}
+    \if#5\empty
+    \else
+    \expandafter\edef\csname #1ADetails\endcsname{#5}
+    \fi
+    \if#6\empty
+    \else
+    \expandafter\edef\csname #1AMinor\endcsname{#6}
+    \fi
+}
+
+% print education history
+\newcommand{\printtimelinerowA}[1]{%
+    \begin{tikzpicture}[remember picture]
+        \node[anchor=north west] (c) at (0,0) {};
+        \node[anchor=north west, align=left] (BET) at ([yshift=0.5cm, xshift=0.5cm] c.north east) {\bfseries{{\csname
+        #1ATitel\endcsname}},\, \color{rightpanelcolor}{{#1 \, --\, {\csname #1ABis\endcsname}}}};
+        \ifcsdef{#1AMinor}{
+            \node[anchor=north west, align=left, text width=10.6cm] (BES) at
+            ([yshift=0.07cm] BET.south west) {{\csname #1AMinor\endcsname}};
+            \node (BEX) at ([xshift=0.125cm, yshift=0.2cm] BES.south west) {};
+        }{
+            \node (BEX) at ([xshift=0.125cm, yshift=0.2cm] BET.south west) {};
+        }
+        \node[anchor=north west, align=left, text width=11cm] (BEO) at (BEX.south west)
+            {{\csname #1AOrt\endcsname}};
+        \ifcsdef{#1ADetails}{
+            \node[anchor=north west, align=left, text width=10.6cm] (BED) at ([yshift=-0.1cm, xshift=0.4cm] BEO.south
+            west)
+                {{\csname #1ADetails\endcsname}};
+        }{}
+        \draw ([yshift=0.5cm, xshift=-0.12cm] c.north east) -- ([yshift=+0.02cm, xshift=-0.62cm] BEO.south west);
+    \end{tikzpicture}%
+    \tabularnewline
+}
+
+\newcommand{\printbildungswege}{%
+    \begin{longtable*}[l]{l}
+        \forlistloop{\printtimelinerowA}{\ausbildungen}
+    \end{longtable*}%
+}
+
+% define zertificats
+\newcommand{\zertifikate}{}
+\newcommand{\zertifikat}[4]{%
+    \listadd{\zertifikate}{#1}
+    \expandafter\edef\csname #1ZTitel\endcsname{#2}
+    \expandafter\edef\csname #1ZOrt\endcsname{#3}
+    \if#4\empty
+    \else
+    \expandafter\edef\csname #1ZDetails\endcsname{#4}
+    \fi
+}
+
+% print zertificats
+\newcommand{\printtimelinerowZ}[1]{%
+    \begin{tikzpicture}[remember picture]
+        \node[anchor=north west] (c) at (0,0) {};
+        \node[anchor=north west, align=left, text width=11cm] (BET) at ([yshift=0.5cm, xshift=0.5cm] c.north east) {{\bfseries{{\csname
+        #1ZTitel\endcsname}}} ({\csname #1ZOrt\endcsname}, \color{rightpanelcolor}{#1}\color{maintextcolor})};
+        \ifcsdef{#1ZDetails}{
+            \node[anchor=north west, align=left, text width=10.6cm] (BED) at ([yshift=-0.5cm, xshift=0.4cm] BET.south
+            west)
+                {{\csname #1ZDetails\endcsname}};
+        }{}
+        \draw ([yshift=0.5cm, xshift=-0.12cm] c.north east) -- ([yshift=+0.02cm, xshift=-0.62cm] BET.south west);
+    \end{tikzpicture}%
+    \tabularnewline
+}
+
+\newcommand{\printzertifikate}{%
+    \begin{longtable*}[l]{l}
+        \forlistloop{\printtimelinerowZ}{\zertifikate}
+    \end{longtable*}%
+}
+
+% define languages
+\newcommand{\languages}{}
+\newcommand{\languageLvl}[2]{%
+    \listadd{\languages}{#1 (\color{rightpanelcolor}#2\color{maintextcolor})}
+}
+
+\newcommand{\printlist}[1]{%
+    \def\process{\def\process{, }}%
+    \def\do##1{\process##1}%
+    \dolistloop{#1}
+}
+
+\newcommand{\printlanguages}{%
+    \begin{longtable*}[l]{l}
+    \begin{tikzpicture}[remember picture]
+        \node[anchor=north west] (c) at (0,0) {};
+        \node[anchor=north west, align=left, text width=11cm] (L) at ([yshift=0.5cm, xshift=0.5cm] c.north east) {\printlist{\languages}};
+        \draw ([yshift=0.5cm, xshift=-0.12cm] c.north east) -- ([yshift=+0.02cm, xshift=-0.62cm] L.south west);
+    \end{tikzpicture}%
+    \end{longtable*}%
+}
+
+% Titles
+\newcommand{\theberufeserfahrungen}{%
+    \thetitle{W O R K \, E X P E R I E N C E}{B E R U F S E R F A H R U N G}
+}
+
+\newcommand{\thebildungswege}{%
+    \thetitle{E D U C A T I O N}{B I L D U N G S W E G}
+}
+
+\newcommand{\thezertifikate}{%
+    \thetitle{Z E R T I F I C A T S}{Z E R T I F I K A T E}
+}
+
+\newcommand{\thelanguages}{%
+    \thetitle{L A N G U A G E S}{S P R A C H E N}
+}
+
+\newcommand{\theskills}{%
+    \thetitle{S K I L L S}{S K I L L S}
+}
+
+% define macro for titles
+\newcommand{\thetitle}[2]{%
+    \begin{tikzpicture}[remember picture]
+        \node[anchor=north west] (ZT) at (0,0)
+            {\languageIf{\large\bfseries\color{maintextcolor}{\MakeUppercase{#1}}}{\large
+        \bfseries\color{maintextcolor}{\MakeUppercase{#2}}}};
+    \end{tikzpicture}%
+}
+
+% define macro for details
+\newcommand{\thetikzdetails}[1]{
+    \begin{tikzpicture}[remember picture]
+        \node[anchor=west] (BET) at (0,0) {#1};
+    \end{tikzpicture}%
+}
+
+% Define Background
+\newcommand{\csvbackground}{%
+    \begin{tikzpicture}[remember picture, overlay, use page relative coordinates]
+        \fill[fill=leftpanelcolor] (0,0) rectangle (\paperwidth/9,\paperheight+1cm);
+    \end{tikzpicture}%
+}
+
+\newcommand{\cvbackgroundFirst}{%
+    \begin{tikzpicture}[remember picture, overlay, use page relative coordinates]
+        \fill[fill=leftpanelcolor] (0,0) rectangle (\paperwidth/3,\paperheight+1cm);
+        \node (pic) at (\paperwidth/6, \paperheight-3.5cm) {{\printpicture}};
+        \node (PT) at ([yshift=-0.8cm] pic.south) {\large\bfseries\color{leftpaneltextcolor}{P R O F I L}};
+        \node[text justified, text width=4.75cm, execute at begin node=\setlength{\baselineskip}{3.5ex},
+        anchor=north] (P) at ([yshift=-0.2cm] PT.south) {\color{leftpaneltextcolor}{\printprofileinfo}};
+        \fill[semitransparent, color=highlightcolor]
+        ([xshift=-1.1cm, yshift=0.1cm] P.north west) rectangle ([xshift=1.1cm, yshift=-0.1cm] P.south east);
+        \node[text justified, text width=4.75cm, execute at begin node=\setlength{\baselineskip}{3.5ex},
+            anchor=north] (P) at ([yshift=-0.2cm] PT.south) {\color{leftpaneltextcolor}{\printprofileinfo}};
+        \draw [color=leftpaneltextcolor] ([yshift=-0.4cm] P.south west) -- ([yshift=-0.4cm] P.south east);
+        \node[align=center, anchor=north] (S) at ([yshift=-0.5cm] P.south) {\color{leftpaneltextcolor}{\large\bfseries{S K I L L
+        S}}};
+        \node[align=left, text width=4.75cm, anchor=north] (SS) at ([xshift=-0.4cm] S.south)
+            {\color{leftpaneltextcolor}{\printskills}};
+        \ifcsdef{qrcode}{
+            \node[align=center, text width=4.75cm] (QT) at ([yshift=0.4cm, xshift=0.35cm] SS.south)
+                {\color{leftpaneltextcolor}\large\bfseries{\languageIf{C O D E \, E X A M P L E}
+            {C O D E \, B E I S P I E L}}};
+            \node[align=center, text width=4.75cm, execute at begin node=\setlength{\baselineskip}{3.5ex},
+                anchor=north] (Q) at ([yshift=0.35cm, xshift=-0.15cm] QT.south) {\printqrcode};
+            \draw [color=leftpaneltextcolor] ([yshift=0.1cm, xshift=-2.45cm] QT.north) -- + (0:5.005cm);
+            \node (QRX) at (Q.south) {};
+        } {
+            \node (QRX) at ([yshift=0.8cm] SS.south) {};
+        }
+        \node[align=center, anchor=north] (I) at ([yshift=0.2cm, xshift=+0.25cm] QRX.south)
+            {\color{leftpaneltextcolor}{\languageIf{\large\bfseries{I N T E R E S T S}}
+        {\large\bfseries{I N T E R E S S E N}}}};
+        \draw [color=leftpaneltextcolor] ([yshift=0.15cm, xshift=-2.55cm] I.north) -- + (0:5.005cm);
+        \node[align=left, text width=4.75cm, anchor=north west] (IS) at ([xshift=-1.05cm] I.south west)
+            {\color{leftpaneltextcolor}{\printinterests}};
+
+        % color and title banner
+        \fill[rightpanelcolor] (\paperwidth/3,\paperheight-1.3cm) rectangle (\paperwidth+0.6cm,
+        \paperheight-5.55cm);
+        \node[align=left, anchor=north west] (T) at ([yshift=0.5cm, xshift=2.275cm] pic.east)
+            {{\Huge\bfseries\color{highlightcolor}{\printname}} \quad {\large\color{maintextcolor}{\printbirthdate}}};
+        \node[align=left, anchor=north west] at (T.south west) {{\large\color{maintextcolor}{\printtitle}}};
+
+        % footnote with contact informations
+        \node[align=left, anchor=south west, text width=13.2cm] (C) at (\paperwidth/3+0.5cm,1cm) {
+        \textit{\quad \, \faMapMarker \, \printaddress \, \printaddresscity} \textit{\quad \faPhone \, \printphone}
+        \textit{\quad \faEnvelope \, \printemail}
+        \ifcsdef{linkedinpara}{\textit{\quad \faLinkedin \, \printlinkedin}}{}
+        \ifcsdef{githubpagepara}{\textit{\quad \faGithub \, \printgithub}}{}
+        };
+    \end{tikzpicture}%
+}
+
+\fancypagestyle{cvpagelayoutFirst}{
+    \fancyhf{} % Clear header and footer
+    \fancyfoot{} % Clear the footer
+    \renewcommand{\headrulewidth}{0pt}
+    \setlength{\headheight}{7cm}
+    \setlength{\footskip}{2cm}
+    \fancyhead[L]{%
+        \cvbackgroundFirst%
+    }
+    \newgeometry{top=6.35cm,left=\paperwidth/3+1cm, bottom=2cm, right=2cm}
+    \setlength{\textheight}{500pt}
+}
+
+\fancypagestyle{cvpagelayout}{
+    \fancyhf{} % Clear header and footer
+    \fancyfoot{} % Clear the footer
+    \renewcommand{\headrulewidth}{0pt}
+    \setlength{\headheight}{2cm}
+    \setlength{\footskip}{2cm}
+    \fancyhead[L]{%
+        \csvbackground%
+    }
+    \newgeometry{top=1cm, left=\paperwidth/9+1cm, bottom=1cm, right=2cm}
+    \setlength{\textheight}{720pt}
+    \raggedright
+}
+
+\fancypagestyle{cvpagelayoutafter}{
+    \fancyhf{} % Clear header and footer
+    \fancyfoot{} % Clear the footer
+    \renewcommand{\headrulewidth}{0pt}
+    \setlength{\headheight}{2cm}
+    \setlength{\footskip}{2cm}
+    \fancyhead[L]{%
+        \csvbackground%
+    }
+    \newgeometry{top=2cm, left=\paperwidth/9+1cm, bottom=2cm, right=2cm}
+    \setlength{\textheight}{680pt}
+    \raggedright
+}
+
+\BeforeBeginEnvironment{document}{%
+    \tikzset{
+        use page relative coordinates/.style={
+            shift={(current page.south west)},
+            x={(current page.south east)},
+            y={(current page.north west)}
+        }
+    }
+    \pagestyle{cvpagelayout}
+}
+
+\newcommand{\printcv}{
+    \newpage
+    \pagestyle{cvpagelayoutafter}%
+    \thispagestyle{cvpagelayoutFirst}
+    \ifdefempty{\berufserfahrungen}{%
+    }{%
+        \theberufeserfahrungen
+        \printberufserfahrungen
+    }
+    \ifdefempty{\ausbildungen}{%
+    }{%
+        \thebildungswege
+        \printbildungswege
+    }
+    \ifdefempty{\zertifikate}{%
+    }{%
+        \thezertifikate
+        \printzertifikate
+    }
+    \ifdefempty{\languages}{%
+    }{%
+        \thelanguages
+        \printlanguages
+    }
+}
+
+\AtBeginDocument{
+    \pagestyle{cvpagelayoutafter}
+}
+\endinput

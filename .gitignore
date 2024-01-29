@@ -1,0 +1,9 @@
+.idea
+auxil
+out/*.gz
+
+picture
+out/main.pdf
+src/main.tex
+
+*.iml
